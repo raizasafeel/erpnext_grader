@@ -1,0 +1,33 @@
+import frappe
+from frappe.translate import get_user_lang
+from frappe.utils.jinja_globals import is_rtl
+
+
+def get_context(context):
+	csrf_token = frappe.sessions.get_csrf_token()
+	frappe.db.commit()
+
+	context.csrf_token = csrf_token
+	context.boot = get_boot(csrf_token)
+	context.favicon = (
+		frappe.db.get_single_value("Website Settings", "favicon")
+		or "/assets/erpnext_grader/images/logo.png"
+	)
+	context.title = (
+		frappe.db.get_single_value("Website Settings", "app_name")
+		or "ERPNext Grader"
+	)
+	return context
+
+
+def get_boot(csrf_token: str) -> frappe._dict:
+	return frappe._dict(
+		{
+			"frappe_version": frappe.__version__,
+			"read_only_mode": frappe.flags.read_only,
+			"csrf_token": csrf_token,
+			"site_name": frappe.local.site,
+			"lang": get_user_lang(),
+			"text_direction": "rtl" if is_rtl() else "ltr",
+		}
+	)
