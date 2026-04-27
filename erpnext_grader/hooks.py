@@ -149,23 +149,11 @@ website_route_rules = [
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"erpnext_grader.tasks.all"
-# 	],
-# 	"daily": [
-# 		"erpnext_grader.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"erpnext_grader.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"erpnext_grader.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"erpnext_grader.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"monthly": [
+		"erpnext_grader.erpnext_grader.delete_tokens.cleanup_unfulfilled_token_requests",
+	],
+}
 
 # Testing
 # -------
@@ -173,7 +161,7 @@ website_route_rules = [
 # before_tests = "erpnext_grader.install.before_tests"
 
 # Extend DocType Class
-# ------------------------------
+# ------------------------------d.cle
 #
 # Specify custom mixins to extend the standard doctype controller.
 # extend_doctype_class = {
