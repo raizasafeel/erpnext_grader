@@ -5,12 +5,16 @@ import json
 import frappe
 import requests
 from frappe import _
+from frappe.rate_limiter import rate_limit
 from frappe.utils import add_days, get_datetime, now_datetime
 from frappe.utils.password import (
 	get_decrypted_password,
 	remove_encrypted_password,
 	set_encrypted_password,
 )
+
+TOKEN_REQUEST_DOCTYPE = "ERPNext Assignment Token Request"
+STUDENT_SITE_DOCTYPE = "ERPNext Assignment Student Site"
 
 
 def _get_course() -> str | None:
@@ -125,58 +129,84 @@ def get_my_submissions() -> list[dict]:
 
 
 @frappe.whitelist(allow_guest=True)
-def issue_token(email: str) -> dict:
+@rate_limit(key="site", limit=5, seconds=60 * 60)
+def issue_token(site: str) -> dict:
 	"""demo site makes this call on app installation; we issue a 30 day token if student enrolled in course"""
-	email = (email or "").strip()
-	if not email:
-		frappe.throw(_("Email is required."))
-	_require_enrolled(email)
+	site = (site or "").strip().rstrip("/")
+	if not site:
+		frappe.throw(_("Site URL is required."))
 
 	token = frappe.generate_hash(length=48)
 	expiry = add_days(now_datetime(), 30)
 
-	existing = _existing_site(email)
-	if existing:
-		name = existing["name"]
+	if frappe.db.exists(TOKEN_REQUEST_DOCTYPE, site):
+		# Re-issue: rotate token, refresh expiry, reset to unfulfilled.
 		frappe.db.set_value(
-			"ERPNext Assignment Student Site", name, "token_expiry", expiry
+			TOKEN_REQUEST_DOCTYPE,
+			site,
+			{"token_expiry": expiry, "fulfilled": 0},
 		)
 	else:
-		name = (
-			frappe.get_doc(
-				{
-					"doctype": "ERPNext Assignment Student Site",
-					"student": email,
-					"token_expiry": expiry,
-				}
-			)
-			.insert(ignore_permissions=True)
-			.name
-		)
-	set_encrypted_password(
-		"ERPNext Assignment Student Site", name, token, "token_bearer"
-	)
+		frappe.get_doc(
+			{
+				"doctype": TOKEN_REQUEST_DOCTYPE,
+				"site": site,
+				"token_expiry": expiry,
+				"fulfilled": 0,
+			}
+		).insert(ignore_permissions=True)
+
+	set_encrypted_password(TOKEN_REQUEST_DOCTYPE, site, token, "token")
 	return {"token": token, "expires_at": str(expiry)}
 
 
 @frappe.whitelist()
 def register_site(site: str) -> dict:
-	"""frontend call when student registers their demo site url"""
+	"""frontend call when student registers their demo site url: student claims token"""
 	user = _require_enrolled()
 	site = (site or "").strip().rstrip("/")
 	if not site:
 		frappe.throw(_("Site URL is required."))
 
-	existing = _existing_site(user)
-	if not existing:
+	if not frappe.db.exists(TOKEN_REQUEST_DOCTYPE, site):
 		frappe.throw(_("Install the grader support app on your demo first."))
 
-	frappe.db.set_value(
-		"ERPNext Assignment Student Site",
-		existing["name"],
-		{"site": site, "last_checked": now_datetime()},
+	owner = frappe.db.get_value(STUDENT_SITE_DOCTYPE, {"site": site}, "student")
+	if owner and owner != user:
+		frappe.throw(_("This site is already claimed by another student."))
+
+	expiry = frappe.db.get_value(TOKEN_REQUEST_DOCTYPE, site, "token_expiry")
+	token = get_decrypted_password(
+		TOKEN_REQUEST_DOCTYPE, site, "token", raise_exception=False
 	)
-	return {"name": existing["name"], "site": site}
+	if not token:
+		frappe.throw(_("Token request is missing its token. Reinstall the support app."))
+
+	existing = _existing_site(user)
+	if existing:
+		name = existing["name"]
+		frappe.db.set_value(
+			STUDENT_SITE_DOCTYPE,
+			name,
+			{"site": site, "token_expiry": expiry, "last_checked": now_datetime()},
+		)
+	else:
+		name = (
+			frappe.get_doc(
+				{
+					"doctype": STUDENT_SITE_DOCTYPE,
+					"student": user,
+					"site": site,
+					"token_expiry": expiry,
+					"last_checked": now_datetime(),
+				}
+			)
+			.insert(ignore_permissions=True)
+			.name
+		)
+	set_encrypted_password(STUDENT_SITE_DOCTYPE, name, token, "token_bearer")
+	frappe.db.set_value(TOKEN_REQUEST_DOCTYPE, site, "fulfilled", 1)
+	return {"name": name, "site": site}
 
 
 @frappe.whitelist()
