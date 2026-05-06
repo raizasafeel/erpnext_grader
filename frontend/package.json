@@ -10,6 +10,7 @@
 		"lint": "biome check --write ."
 	},
 	"dependencies": {
+		"dompurify": "^3.4.1",
 		"feather-icons": "^4.29.2",
 		"frappe-ui": "^0.1.192",
 		"lucide-vue-next": "^0.460.0",

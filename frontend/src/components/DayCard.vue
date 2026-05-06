@@ -126,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+import DOMPurify from "dompurify"
 import { Badge, Button, LoadingIndicator } from "frappe-ui"
 import { ChevronRight, FileText, History, ListChecks, X } from "lucide-vue-next"
 import { marked } from "marked"
@@ -153,7 +154,9 @@ defineEmits<(e: "grade", name: string) => void>()
 
 const renderedDetails = computed(() =>
 	props.day.assignment_details
-		? (marked.parse(props.day.assignment_details, { async: false }) as string)
+		? DOMPurify.sanitize(
+				marked.parse(props.day.assignment_details, { async: false }) as string,
+			)
 		: "",
 )
 
