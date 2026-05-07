@@ -64,7 +64,8 @@ type PortalContext = {
 		name: string
 		site: string
 		last_checked: string
-	}
+		connected: boolean
+	} | null
 }
 
 const portalContext = createResource({
@@ -102,7 +103,7 @@ const submissions = computed(
 )
 
 const siteUrl = computed(() => context.value?.site?.site ?? "")
-const connected = computed(() => !!context.value?.site)
+const connected = computed(() => !!context.value?.site?.connected)
 const lastChecked = computed(() => context.value?.site?.last_checked ?? null)
 
 function newestFirst(a: DaySubmission, b: DaySubmission): number {

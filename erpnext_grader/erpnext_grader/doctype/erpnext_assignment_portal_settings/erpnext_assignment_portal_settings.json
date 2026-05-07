@@ -5,7 +5,8 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "course"
+  "course",
+  "restrict_to_paid_certification"
  ],
  "fields": [
   {
@@ -16,6 +17,12 @@
    "label": "Course",
    "options": "LMS Course",
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "restrict_to_paid_certification",
+   "fieldtype": "Check",
+   "label": "Restrict to Paid Certification"
   }
  ],
  "grid_page_length": 50,

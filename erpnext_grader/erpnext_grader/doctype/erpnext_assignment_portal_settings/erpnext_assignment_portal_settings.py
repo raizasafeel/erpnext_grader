@@ -15,6 +15,6 @@ class ERPNextAssignmentPortalSettings(Document):
 		from frappe.types import DF
 
 		course: DF.Link
-	# end: auto-generated types
+		restrict_to_paid_certification: DF.Check
 
 	pass
