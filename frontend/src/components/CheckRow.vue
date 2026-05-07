@@ -7,11 +7,11 @@
 			>
 				<component :is="indicator.icon" :class="indicator.iconSize"
 			/></span>
-			<span class="text-base text-ink-gray-9">{{ label }}</span>
+			<span class="text-p-base text-ink-gray-9">{{ label }}</span>
 		</div>
 		<dl
 			v-if="state === 'fail' && detailRows.length"
-			class="mt-2 flex flex-col gap-1 rounded-md bg-surface-gray-1 px-4 py-3 text-sm"
+			class="mt-2 flex flex-col gap-1 rounded-md bg-surface-gray-1 px-4 py-3 text-p-sm"
 		>
 			<div v-for="row in detailRows" :key="row.label" class="flex gap-1.5">
 				<dt class="shrink-0 text-ink-gray-5">{{ row.label }}:</dt>

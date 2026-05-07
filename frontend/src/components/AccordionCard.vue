@@ -10,7 +10,7 @@
 		>
 			<div class="flex items-center gap-3">
 				<span
-					class="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium"
+					class="flex size-7 shrink-0 items-center justify-center rounded-full text-p-xs font-medium"
 					:class="iconClasses"
 				>
 					<Lock v-if="locked" class="size-3.5" />
@@ -18,7 +18,7 @@
 					<span v-else>{{ index }}</span>
 				</span>
 
-				<h3 class="text-lg font-medium text-ink-gray-9">
+				<h3 class="text-p-lg font-medium text-ink-gray-9">
 					{{ title }}
 				</h3>
 			</div>

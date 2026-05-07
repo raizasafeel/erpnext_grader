@@ -11,7 +11,7 @@
 				<section class="min-w-0">
 					<div class="mb-2 flex h-8 items-center gap-2">
 						<FileText class="size-3.5" />
-						<span class="text-sm font-semibold uppercase tracking-widest">
+						<span class="text-p-sm font-semibold uppercase tracking-widest">
 							Assignment
 						</span>
 					</div>
@@ -20,14 +20,14 @@
 						class="prose prose-sm max-w-none rounded-md border border-outline-gray-1 bg-surface-gray-1 p-3 text-ink-gray-8"
 						v-html="renderedDetails"
 					/>
-					<p v-else class="text-sm text-ink-gray-6">No details provided.</p>
+					<p v-else class="text-p-sm text-ink-gray-6">No details provided.</p>
 				</section>
 
 				<section class="min-w-0">
 					<div class="mb-2 flex h-8 items-center justify-between gap-2">
 						<div class="flex items-center gap-2">
 							<ListChecks class="size-3.5" />
-							<span class="text-sm font-semibold uppercase tracking-widest">
+							<span class="text-p-sm font-semibold uppercase tracking-widest">
 								Checks
 							</span>
 						</div>
@@ -54,7 +54,7 @@
 							:actual="r.actual"
 						/>
 					</ul>
-					<p v-else class="text-sm text-ink-gray-6">
+					<p v-else class="text-p-sm text-ink-gray-6">
 						Not graded yet — submit to run the checks.
 					</p>
 				</section>
@@ -69,7 +69,7 @@
 				>
 					<div class="flex items-center gap-2">
 						<History class="size-3.5" />
-						<span class="text-sm font-semibold uppercase tracking-widest">
+						<span class="text-p-sm font-semibold uppercase tracking-widest">
 							Past attempts
 						</span>
 						<Badge theme="gray">{{ dayState.submissions.length }}</Badge>
@@ -88,7 +88,7 @@
 									<ChevronRight
 										class="size-3 text-ink-gray-5 transition-transform group-open/attempt:rotate-90"
 									/>
-									<span class="text-sm text-ink-gray-7">
+									<span class="text-p-sm text-ink-gray-7">
 										{{ formatTime(s.submission_time) }}
 									</span>
 								</div>
@@ -107,10 +107,10 @@
 									>
 										<X class="size-3" />
 									</span>
-									<span class="text-sm text-ink-gray-8">{{ r.label }}</span>
+									<span class="text-p-sm text-ink-gray-8">{{ r.label }}</span>
 								</li>
 							</ul>
-							<p v-else class="mt-1.5 ml-7 text-sm text-ink-gray-5">
+							<p v-else class="mt-1.5 ml-7 text-p-sm text-ink-gray-5">
 								{{
 									s.status === "Passed"
 										? "All checks passed."

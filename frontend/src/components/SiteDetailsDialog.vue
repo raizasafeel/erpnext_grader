@@ -6,7 +6,7 @@
 	>
 		<template #body-content>
 			<div
-				class="grid grid-cols-1 md:grid-cols-2 gap-y-2 text-base text-ink-gray-7"
+				class="grid grid-cols-1 md:grid-cols-2 gap-y-2 text-p-base text-ink-gray-7"
 			>
 				<span class="font-medium text-ink-gray-9">Connected site</span>
 				<span class="break-all">{{ siteUrl }}</span>

@@ -17,16 +17,25 @@
 			<ConnectSitePanel :default-site="siteUrl" @connected="portalContext.fetch()" />
 		</div>
 		<div v-else class="flex flex-1 flex-col m-6 gap-3">
+			<div class="mb-2">
+				<h1 class="text-p-2xl font-semibold text-ink-gray-9">
+					Hello, {{ firstName }}
+				</h1>
+				<p class="mt-1 text-p-base text-ink-gray-6">
+					Complete each day's assignments to finish your ERPNext course.
+				</p>
+			</div>
+
 			<div
 				v-if="assignmentsResource.loading"
-				class="rounded-md border border-outline-gray-2 bg-surface-white p-4 text-sm text-ink-gray-6"
+				class="rounded-md border border-outline-gray-2 bg-surface-white p-4 text-p-sm text-ink-gray-6"
 			>
 				Loading assignments...
 			</div>
 
 			<div
 				v-else-if="!days.length"
-				class="rounded-md border border-outline-gray-2 bg-surface-white p-4 text-sm text-ink-gray-6"
+				class="rounded-md border border-outline-gray-2 bg-surface-white p-4 text-p-sm text-ink-gray-6"
 			>
 				No assignments published yet.
 			</div>
@@ -95,6 +104,9 @@ const logout = createResource({
 })
 
 const context = computed(() => portalContext.data as PortalContext | null)
+const firstName = computed(
+	() => context.value?.full_name?.split(" ")[0] ?? "there",
+)
 const days = computed(
 	() => (assignmentsResource.data as AssignmentDay[] | null) ?? [],
 )

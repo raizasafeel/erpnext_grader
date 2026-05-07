@@ -1,6 +1,6 @@
 <template>
 	<div class="rounded-md border border-outline-gray-2 bg-surface-white p-6">
-		<h3 class="text-lg font-medium text-ink-gray-9 mb-3">Connect your ERPNext site</h3>
+		<h3 class="text-p-lg font-medium text-ink-gray-9 mb-3">Connect your ERPNext site</h3>
 		<form class="flex flex-col gap-3" @submit.prevent="submit">
 			<FormControl
 				v-model="siteInput"
@@ -8,7 +8,7 @@
 				placeholder="https://your-site.m.frappe.cloud"
 				:readonly="!!defaultSite"
 			/>
-			<ol class="list-decimal flex flex-col gap-1 pl-5 text-sm text-ink-gray-7">
+			<ol class="list-decimal flex flex-col gap-1 pl-5 text-p-sm text-ink-gray-7">
 				<li>Your ERPNext site must be signed in with the same email as this portal.</li>
 				<li>Enter the URL above and click Connect.</li>
 			</ol>
@@ -20,7 +20,7 @@
 			>
 				Connect
 			</Button>
-			<p v-if="defaultSite" class="text-xs text-ink-gray-6">
+			<p v-if="defaultSite" class="text-p-xs text-ink-gray-6">
 				To connect a different site, contact
 				<a
 					href="mailto:school@frappe.io"
