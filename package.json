@@ -1,0 +1,15 @@
+{
+  "name": "erpnext_grader",
+  "version": "1.0.0",
+  "description": "Grader for erpnext assignment on frappe school",
+  "type": "module",
+  "scripts": {
+    "postinstall": "cd frontend && yarn install --check-files",
+    "dev": "cd frontend && yarn dev",
+    "build": "cd frontend && yarn build"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}
