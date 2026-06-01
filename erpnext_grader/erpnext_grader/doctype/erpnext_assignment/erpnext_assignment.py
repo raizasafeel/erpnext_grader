@@ -8,7 +8,6 @@ from frappe import _
 from frappe.model.document import Document
 
 
-
 class ERPNextAssignment(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
@@ -19,27 +18,39 @@ class ERPNextAssignment(Document):
 		from frappe.types import DF
 
 		assignment_details: DF.MarkdownEditor | None
+		blurb: DF.SmallText | None
 		checks: DF.JSON | None
-		day: DF.Int
 		published: DF.Check
+		section: DF.Data
+		section_order: DF.Int
 		total_checks: DF.Int
 	# end: auto-generated types
 
 	def autoname(self) -> None:
-		self.name = f"day {self.day}"
+		# section is intentionally not DB-unique: same-named sections from different
+		# source days stay distinct rows, disambiguated by the numeric suffix here.
+		base = frappe.scrub(self.section or "").replace("_", "-")
+		if not base:
+			frappe.throw(_("Section is required."))
+		self.name = base
+		# First duplicate becomes base-2, then base-3, etc. (the original is #1).
+		suffix = 2
+		while frappe.db.exists("ERPNext Assignment", self.name):
+			self.name = f"{base}-{suffix}"
+			suffix += 1
 
 	def validate(self) -> None:
+		self._validate_mandatory()
 		self.total_checks = _count_checks(self.checks)
 
 		if not self.published:
 			return
 
-		# todo: use mandatory json for this
 		if self.total_checks <= 0:
-			frappe.throw(_("Published assignments must have at least one grading check."))
+			frappe.throw(_("Published sections must have at least one grading check."))
 
 		if not self.assignment_details:
-			frappe.throw(_("Published assignments must have assignment details."))
+			frappe.throw(_("Published sections must have assignment details."))
 
 
 def _count_checks(checks_json: str | None) -> int:
