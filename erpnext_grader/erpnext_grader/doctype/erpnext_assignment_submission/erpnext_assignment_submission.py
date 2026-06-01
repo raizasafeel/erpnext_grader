@@ -14,10 +14,10 @@ class ERPNextAssignmentSubmission(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		day: DF.Link
 		passed_checks: DF.Int
 		percent: DF.Percent
 		results: DF.JSON | None
+		section: DF.Link
 		site: DF.Link
 		status: DF.Literal["Passed", "Failed"]
 		student: DF.Link | None
@@ -27,7 +27,7 @@ class ERPNextAssignmentSubmission(Document):
 
 	def autoname(self) -> None:
 		time_now = now_datetime().strftime("%Y-%m-%d %H:%M:%S")
-		self.name = f"{self.student}.{self.day}.{time_now}"
+		self.name = f"{self.student}.{self.section}.{time_now}"
 
 	def validate(self) -> None:
 		if not self.submission_time:

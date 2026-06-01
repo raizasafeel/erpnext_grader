@@ -7,7 +7,7 @@
  "field_order": [
   "student_information_and_marks_section",
   "site",
-  "day",
+  "section",
   "student",
   "submission_time",
   "column_break_cout",
@@ -33,9 +33,9 @@
    "reqd": 1
   },
   {
-   "fieldname": "day",
+   "fieldname": "section",
    "fieldtype": "Link",
-   "label": "Day",
+   "label": "Section",
    "options": "ERPNext Assignment",
    "reqd": 1
   },
@@ -58,7 +58,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "day.total_checks",
+   "fetch_from": "section.total_checks",
    "fieldname": "total_checks",
    "fieldtype": "Int",
    "label": "Total Checks",
