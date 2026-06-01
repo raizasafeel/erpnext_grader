@@ -6,10 +6,10 @@
  "engine": "InnoDB",
  "field_order": [
   "section",
+  "section_order",
   "published",
   "column_break_tmrc",
   "total_checks",
-  "section_order",
   "details_section",
   "blurb",
   "assignment_details",
