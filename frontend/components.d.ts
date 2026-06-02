@@ -8,13 +8,14 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AccordionCard: typeof import('./src/components/AccordionCard.vue')['default']
+    AnalyticsHero: typeof import('./src/components/AnalyticsHero.vue')['default']
     AppHeader: typeof import('./src/components/AppHeader.vue')['default']
     CheckRow: typeof import('./src/components/CheckRow.vue')['default']
     ConnectSitePanel: typeof import('./src/components/ConnectSitePanel.vue')['default']
-    DayCard: typeof import('./src/components/DayCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SectionCard: typeof import('./src/components/SectionCard.vue')['default']
+    SectionNav: typeof import('./src/components/SectionNav.vue')['default']
     SiteDetailsDialog: typeof import('./src/components/SiteDetailsDialog.vue')['default']
   }
 }
