@@ -119,8 +119,8 @@ def get_assignments() -> list[dict]:
 	return frappe.get_all(
 		"ERPNext Assignment",
 		filters={"published": 1},
-		fields=["name", "day", "total_checks", "assignment_details"],
-		order_by="day asc",
+		fields=["name", "section", "section_order", "blurb", "total_checks", "assignment_details"],
+		order_by="section_order asc, section asc",
 	)
 
 
@@ -133,7 +133,7 @@ def get_my_submissions() -> list[dict]:
 		filters={"student": user},
 		fields=[
 			"name",
-			"day",
+			"section",
 			"submission_time",
 			"status",
 			"passed_checks",
