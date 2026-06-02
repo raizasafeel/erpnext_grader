@@ -279,17 +279,10 @@ def disconnect_site() -> dict:
 
 
 @frappe.whitelist()
-def grade_day(day: str) -> dict:
-	"""grading of a particular day; queues them up"""
+def regrade() -> dict:
+	"""Re-check the whole connected site: grade every published section in one call."""
 	user = frappe.session.user
 	_check_perms(user)
-
-	already_passed = frappe.db.exists(
-		"ERPNext Assignment Submission",
-		{"student": user, "day": day, "status": "Passed"},
-	)
-	if already_passed:
-		frappe.throw(_("You've already passed this day. It can't be regraded."))
 
 	state = _site_state(user)
 	if not state:
@@ -299,102 +292,137 @@ def grade_day(day: str) -> dict:
 	if not state.valid:
 		frappe.throw(_("No valid token. Reinstall the grader support app to refresh."))
 
-	if not frappe.db.get_value("ERPNext Assignment", day, "published"):
-		frappe.throw(_("This assignment is not published."))
-
 	frappe.enqueue(
 		"erpnext_grader.erpnext_grader.api._run_grade",
 		queue="short",
-		job_name=f"grade-{user}-{day}",
+		job_name=f"grade-{user}",
 		user=user,
-		day=day,
 		site_name=state.name,
 		site_url=state.site,
 	)
 	return {"queued": True}
 
 
-def _run_grade(user: str, day: str, site_name: str, site_url: str) -> None:
+def _combined_checks() -> dict:
+	"""Merge every published section's checks into one {section: entries} dict."""
+	combined: dict = {}
+	for row in frappe.get_all(
+		"ERPNext Assignment", filters={"published": 1}, fields=["name", "checks"]
+	):
+		try:
+			data = json.loads(row.checks or "{}")
+		except (TypeError, ValueError):
+			data = {}
+		for section, entries in data.items():
+			combined.setdefault(section, []).extend(entries or [])
+	return combined
+
+
+def _section_to_assignment() -> dict[str, str]:
+	"""Map a section name -> its ERPNext Assignment docname."""
+	return {
+		r.section: r.name
+		for r in frappe.get_all(
+			"ERPNext Assignment", filters={"published": 1}, fields=["name", "section"]
+		)
+	}
+
+
+def _submissions_from_results(results: list[dict]) -> dict[str, dict]:
+	"""Group flat check results by their `section` tag into per-section summaries."""
+	grouped: dict[str, dict] = {}
+	for r in results:
+		section = r.get("section") or "Other"
+		g = grouped.setdefault(section, {"results": [], "passed": 0, "total": 0})
+		g["results"].append(r)
+		g["total"] += 1
+		if r.get("passed"):
+			g["passed"] += 1
+	for g in grouped.values():
+		total, passed = g["total"], g["passed"]
+		g["percent"] = round(passed / total * 100, 1) if total else 0
+		g["status"] = "Passed" if total and passed == total else "Failed"
+	return grouped
+
+
+def _run_grade(user: str, site_name: str, site_url: str) -> None:
 	try:
 		state = _site_state(user)
 		if not state or not state.valid:
-			_write_failed_submission(
-				user, day, site_name, "No valid token. Reinstall the grader support app."
-			)
+			_write_failed_submission(site_name, "No valid token. Reinstall the grader support app.")
 			return
 		token = state.bearer
-
-		checks_raw = frappe.db.get_value("ERPNext Assignment", day, "checks") or "{}"
-		checks = json.loads(checks_raw)
+		checks = _combined_checks()
 
 		url = f"{site_url.rstrip('/')}/api/method/erpnext_grader_support.erpnext_grader_support.api.run_checks_api"
 		try:
 			resp = requests.post(
-				url,
-				headers={"X-Grader-Token": token},
-				json={"checks": checks},
-				timeout=15,
+				url, headers={"X-Grader-Token": token}, json={"checks": checks}, timeout=30
 			)
 		except requests.ConnectionError:
-			_write_failed_submission(user, day, site_name, f"Could not reach {site_url}.")
+			_write_failed_submission(site_name, f"Could not reach {site_url}.")
 			return
 		except requests.Timeout:
-			_write_failed_submission(user, day, site_name, f"Request to {site_url} timed out.")
+			_write_failed_submission(site_name, f"Request to {site_url} timed out.")
 			return
 
 		if resp.status_code >= 400:
-			_write_failed_submission(
-				user, day, site_name, f"Demo returned {resp.status_code}: {resp.text[:300]}"
-			)
+			_write_failed_submission(site_name, f"Demo returned {resp.status_code}: {resp.text[:300]}")
 			return
-
 		try:
 			result = resp.json().get("message") or {}
 		except ValueError:
-			_write_failed_submission(user, day, site_name, "Invalid response from demo.")
+			_write_failed_submission(site_name, "Invalid response from demo.")
 			return
 	except Exception as e:
-		_write_failed_submission(user, day, site_name, str(e) or e.__class__.__name__)
+		_write_failed_submission(site_name, str(e) or e.__class__.__name__)
 		return
 
 	results = result.get("results") or []
-	total = int(result.get("total") or 0)
-	passed = int(result.get("passed") or 0)
-	status = "Passed" if total and passed == total else "Failed"
-	percent = round(passed / total * 100, 1) if total else 0
-
-	frappe.get_doc(
-		{
-			"doctype": "ERPNext Assignment Submission",
-			"site": site_name,
-			"day": day,
-			"total_checks": total,
-			"passed_checks": passed,
-			"percent": percent,
-			"status": status,
-			"results": json.dumps(results),
-		}
-	).insert(ignore_permissions=True)
-	frappe.db.set_value(
-		"ERPNext Assignment Student Site", site_name, "last_checked", now_datetime()
-	)
+	grouped = _submissions_from_results(results)
+	section_map = _section_to_assignment()
+	now = now_datetime()
+	for section, g in grouped.items():
+		assignment = section_map.get(section)
+		if not assignment:
+			continue
+		# total_checks has fetch_from: "section.total_checks", so Frappe overwrites the
+		# inserted value with the assignment's defined count on save. This is safe because
+		# the live grader returns exactly one result per defined check, making g["total"]
+		# equal to the assignment's total_checks.
+		frappe.get_doc(
+			{
+				"doctype": "ERPNext Assignment Submission",
+				"site": site_name,
+				"section": assignment,
+				"total_checks": g["total"],
+				"passed_checks": g["passed"],
+				"percent": g["percent"],
+				"status": g["status"],
+				"results": json.dumps(g["results"]),
+			}
+		).insert(ignore_permissions=True)
+	frappe.db.set_value("ERPNext Assignment Student Site", site_name, "last_checked", now)
 	frappe.db.commit()
 
 
-def _write_failed_submission(user: str, day: str, site_name: str, error: str) -> None:
+def _write_failed_submission(site_name: str, error: str) -> None:
 	error_row = [
-		{
-			"label": "Grading error",
-			"passed": False,
-			"expected": "Grading completes successfully",
-			"actual": error,
-		}
+		{"label": "Grading error", "passed": False,
+		 "expected": "Grading completes successfully", "actual": error,
+		 "section": "Grading", "title": "Grading"}
 	]
+	# Attach the error to the first published section so the student sees it.
+	assignment = frappe.db.get_value(
+		"ERPNext Assignment", {"published": 1}, "name", order_by="section_order asc"
+	)
+	if not assignment:
+		return
 	frappe.get_doc(
 		{
 			"doctype": "ERPNext Assignment Submission",
 			"site": site_name,
-			"day": day,
+			"section": assignment,
 			"total_checks": 0,
 			"passed_checks": 0,
 			"percent": 0,
