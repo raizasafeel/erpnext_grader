@@ -18,23 +18,26 @@ class TestERPNextAssignment(FrappeTestCase):
 		).insert(ignore_permissions=True)
 		return doc
 
+	# ZZ-prefixed section names keep these fixtures from colliding with the real
+	# migrated rows (company-setup, customers, …), which would otherwise force a
+	# numeric suffix and break the slug assertions.
 	def test_autoname_slugs_section(self):
-		doc = self._make("Company Setup")
-		self.assertEqual(doc.name, "company-setup")
+		doc = self._make("ZZ Company Setup")
+		self.assertEqual(doc.name, "zz-company-setup")
 
 	def test_autoname_suffixes_on_collision(self):
-		a = self._make("Company Setup")
-		b = self._make("Company Setup")
-		self.assertEqual(a.name, "company-setup")
-		self.assertEqual(b.name, "company-setup-2")
+		a = self._make("ZZ Company Setup")
+		b = self._make("ZZ Company Setup")
+		self.assertEqual(a.name, "zz-company-setup")
+		self.assertEqual(b.name, "zz-company-setup-2")
 
 	def test_total_checks_counted(self):
-		checks = {"Company": [{"title": "Co", "doctype": "Company", "name": "X",
+		checks = {"ZZ Company": [{"title": "Co", "doctype": "Company", "name": "X",
 			"checks": [{"heading": "a", "check_type": "match"},
 			           {"heading": "b", "check_type": "match"}]}]}
-		doc = self._make("Company", checks=checks)
+		doc = self._make("ZZ Company", checks=checks)
 		self.assertEqual(doc.total_checks, 2)
 
 	def test_published_requires_checks(self):
 		with self.assertRaises(frappe.ValidationError):
-			self._make("Empty", published=1, assignment_details="hi")
+			self._make("ZZ Empty", published=1, assignment_details="hi")
