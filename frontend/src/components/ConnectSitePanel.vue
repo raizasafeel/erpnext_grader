@@ -1,42 +1,51 @@
 <template>
-	<div class="rounded-md border border-outline-gray-2 bg-surface-white p-6">
-		<h3 class="text-p-lg font-medium text-ink-gray-9 mb-3">Connect your ERPNext site</h3>
-		<form class="flex flex-col gap-3" @submit.prevent="submit">
-			<FormControl
-				v-model="siteInput"
-				type="text"
-				placeholder="https://your-site.m.frappe.cloud"
-				:readonly="!!defaultSite"
-			/>
-			<ol class="list-decimal flex flex-col gap-1 pl-5 text-p-sm text-ink-gray-7">
-				<li>Your ERPNext site must be signed in with the same email as this portal.</li>
-				<li>Enter the URL above and click Connect.</li>
-			</ol>
-			<Button
-				variant="solid"
-				:loading="registerSite.loading"
-				type="submit"
-				class="w-full mt-3"
-			>
-				Connect
-			</Button>
-			<p v-if="defaultSite" class="text-p-xs text-ink-gray-6">
-				To connect a different site, contact
-				<a
-					href="mailto:school@frappe.io"
-					class="text-ink-blue-3 hover:underline"
-				>school@frappe.io</a>.
-			</p>
-			<ErrorMessage
-				v-if="registerSite.error"
-				:message="registerSite.error.messages?.[0] || 'Failed to connect'"
-			/>
-		</form>
-	</div>
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div class="mx-auto w-full max-w-md rounded-2xl border border-outline-gray-2 bg-surface-white p-8">
+      <div class="mb-6 flex flex-col items-center gap-3 text-center">
+        <div class="grid size-10 place-items-center rounded-xl bg-surface-gray-7">
+          <LucideCheck class="size-5 text-ink-white" :stroke-width="2.5" />
+        </div>
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-ink-gray-9">ERPNext Grader</h1>
+          <p class="mt-1 text-sm text-ink-gray-5">
+            Paste your practice-site URL to start grading
+          </p>
+        </div>
+      </div>
+
+      <form class="flex flex-col gap-4" @submit.prevent="submit">
+        <FormControl
+          v-model="siteInput"
+          type="text"
+          label="Practice site URL"
+          placeholder="https://your-site.localhost"
+          :readonly="!!defaultSite"
+        />
+        <Button
+          variant="solid"
+          theme="gray"
+          :loading="registerSite.loading"
+          type="submit"
+          class="w-full"
+        >
+          Connect site
+        </Button>
+        <p v-if="defaultSite" class="text-center text-xs text-ink-gray-5">
+          To connect a different site, contact
+          <a href="mailto:school@frappe.io" class="text-ink-blue-3 hover:underline">school@frappe.io</a>.
+        </p>
+        <ErrorMessage
+          v-if="registerSite.error"
+          :message="registerSite.error.messages?.[0] || 'Failed to connect'"
+        />
+      </form>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { Button, ErrorMessage, FormControl, createResource } from "frappe-ui"
+import { LucideCheck } from "lucide-vue-next"
 import { ref, watch } from "vue"
 
 const props = defineProps<{
