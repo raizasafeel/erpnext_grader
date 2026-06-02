@@ -1,36 +1,51 @@
-export type AssignmentDay = {
-	name: string
-	day: number
-	total_checks: number
-	assignment_details: string | null
+export interface AssignmentSection {
+  name: string
+  section: string
+  section_order: number
+  blurb: string | null
+  total_checks: number
+  assignment_details: string | null
 }
 
-export type CheckResult = {
-	label: string
-	passed: boolean
-	expected: string | null
-	actual: string | null
+export interface CheckResult {
+  label: string
+  passed: boolean
+  expected: string | null
+  actual: string | null
+  section: string
+  title: string
 }
 
-export type DaySubmission = {
-	name: string
-	day: string
-	submission_time: string
-	status: "Passed" | "Failed"
-	passed_checks: number
-	total_checks: number
-	percent: number
-	results: CheckResult[]
+export interface SectionSubmission {
+  name: string
+  section: string
+  submission_time: string
+  status: 'Passed' | 'Failed'
+  passed_checks: number
+  total_checks: number
+  percent: number
+  results: CheckResult[]
 }
 
-export type DayState = {
-	day: AssignmentDay
-	submissions: DaySubmission[]
-	best: DaySubmission | null
-	passed: boolean
-	locked: boolean
-	badgeTheme: "green" | "red" | "gray"
-	badgeLabel: string | null
-	subtitle: string | null
-	status: "active" | "done" | "locked"
+export type SectionStatus = 'passed' | 'partial' | 'failed'
+
+export interface CheckGroup {
+  title: string
+  checks: CheckResult[]
+}
+
+export interface SectionState {
+  section: AssignmentSection
+  latest: SectionSubmission | null
+  status: SectionStatus
+  passed: number
+  total: number
+  groups: CheckGroup[]
+}
+
+export interface OverallStats {
+  secPassed: number
+  secTotal: number
+  chkPassed: number
+  chkTotal: number
 }
