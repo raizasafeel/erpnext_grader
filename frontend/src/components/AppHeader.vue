@@ -16,9 +16,7 @@ defineEmits<{ (e: 'open-details'): void; (e: 'logout'): void }>()
   <header class="sticky top-0 z-40 flex h-[60px] items-center justify-between gap-4
                  border-b border-outline-gray-2 bg-surface-white px-5">
     <div class="flex items-center gap-3">
-      <div class="grid size-8 place-items-center rounded-lg bg-surface-gray-7 text-ink-white">
-        <LucideCheck class="size-4" :stroke-width="3" />
-      </div>
+      <GraderLogo />
       <div class="flex flex-col leading-tight">
         <span class="text-base font-semibold text-ink-gray-9">ERPNext Grader</span>
         <span class="text-xs text-ink-gray-5">Student Portal</span>

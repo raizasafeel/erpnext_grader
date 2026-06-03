@@ -12,6 +12,8 @@ declare module 'vue' {
     AppHeader: typeof import('./src/components/AppHeader.vue')['default']
     CheckRow: typeof import('./src/components/CheckRow.vue')['default']
     ConnectSitePanel: typeof import('./src/components/ConnectSitePanel.vue')['default']
+    GraderLogo: typeof import('./src/components/GraderLogo.vue')['default']
+    LucideCheck: typeof import('~icons/lucide/check')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SectionCard: typeof import('./src/components/SectionCard.vue')['default']

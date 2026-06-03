@@ -1,5 +1,5 @@
 <template>
-	<div class="min-h-screen bg-surface-gray-1">
+	<div class="flex flex-col min-h-screen bg-surface-gray-1">
 		<AppHeader
 			:connected="connected"
 			:site-label="siteLabel"
